@@ -1,0 +1,22 @@
+
+s3:
+  endpoint: s3://aws.com
+  accessKey: asdasd
+  secretKey: dasdas
+compressArchives: false
+auditLogger:
+  customLogFormat:
+  muting:
+    inverted: false
+    targets: []
+  enabled: true
+  logFilePath: /Library/Application Support/Logga/audit.log
+  outputFormat: json
+  maxLogFileCount: 5
+  maxLogFileSize: 10485760
+accessLogger:
+  enabled: true
+  logFilePath: /Library/Application Support/Logga/access.log
+  outputFormat: json
+  maxLogFileCount: 5
+  maxLogFileSize: 10485760

@@ -1,0 +1,44 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+            <key>S3Endpoint</key>
+            <string>s3://profile</string>
+            <key>S3AccessKey</key>
+            <string>profile_access_key_123</string>
+            <key>S3SecretKey</key>
+            <string>profile_secret_key_123</string>
+			<key>PayloadDescription</key>
+			<string>logga configuration profile</string>
+			<key>PayloadDisplayName</key>
+			<string>logga Configuration Profile</string>
+			<key>PayloadIdentifier</key>
+			<string>com.logga.client.2e03f882-4744-40c4-88e1-47e38d9337cd</string>
+			<key>PayloadOrganization</key>
+			<string>logga</string>
+			<key>PayloadType</key>
+			<string>com.logga.client</string>
+			<key>PayloadUUID</key>
+			<string>2e03f882-4744-40c4-88e1-47e38d9337cd</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>logga configuration profile</string>
+	<key>PayloadDisplayName</key>
+	<string>logga Configuration Profile</string>
+	<key>PayloadIdentifier</key>
+	<string>com.logga.client.configuration</string>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>59174207-CD91-40FF-9DCA-4C6F2EE0441A</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>
