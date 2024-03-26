@@ -7,5 +7,8 @@ edition = "2021"
 
 [dependencies]
 core-foundation-sys = "0.8.6"
+env_logger = "0.11.3"
+log = "0.4.21"
+notify = "6.1.1"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_yaml = "0.9.33"

@@ -8,9 +8,12 @@ use core_foundation_sys::string::kCFStringEncodingUTF8;
 use core_foundation_sys::string::CFStringCreateWithBytesNoCopy;
 use core_foundation_sys::string::CFStringGetCStringPtr;
 use core_foundation_sys::string::CFStringRef;
+use log::error;
 use serde::Deserialize;
 use serde_yaml;
+use std::collections::HashMap;
 use std::path::Path;
+use std::process;
 
 const S3_ENDPOINT_PROFILE_KEY: &str = "S3Endpoint";
 const S3_ACCESS_PROFILE_KEY: &str = "S3AccessKey";
@@ -31,12 +34,29 @@ pub struct S3 {
 }
 
 impl Configuration {
-    pub fn parse_config_yaml(path: &String) -> Result<Configuration, Box<dyn std::error::Error>> {
+    pub fn build(config_path: &String, profile_path: &String, bundle_id: &String) -> Configuration {
+        let profile_config = Configuration::parse_configuration_profile(&profile_path, &bundle_id);
+        if let Some(c) = profile_config {
+            return c;
+        }
+
+        let config = match Configuration::parse_config_yaml(&config_path) {
+            Ok(config) => config,
+            Err(err_string) => {
+                error!("Problem parsing config yaml: {err_string}");
+                process::exit(1)
+            }
+        };
+
+        config
+    }
+
+    fn parse_config_yaml(path: &String) -> Result<Configuration, Box<dyn std::error::Error>> {
         let cfg_handle = std::fs::File::open(path)?;
         serde_yaml::from_reader(cfg_handle).map_err(|e| e.into())
     }
 
-    pub fn parse_configuration_profile<'a>(
+    fn parse_configuration_profile(
         profile_path: &String,
         bundle_id: &String,
     ) -> Option<Configuration> {
@@ -44,48 +64,45 @@ impl Configuration {
             return None;
         }
 
+        let mut preferences: HashMap<&str, Option<String>> = HashMap::new();
+
         unsafe {
             let bundle_id_key = static_cf_string(&bundle_id);
             if bundle_id_key.is_null() {
-                println!("Problem creating bundle_id_key");
+                error!("Problem creating bundle_id_key");
             }
 
-            let s3_endpoint_key = static_cf_string(S3_ENDPOINT_PROFILE_KEY);
-            if s3_endpoint_key.is_null() {
-                println!("Problem creating s3_endpoint_key");
+            for label in vec![
+                S3_ENDPOINT_PROFILE_KEY,
+                S3_ACCESS_PROFILE_KEY,
+                S3_SECRET_PROFILE_KEY,
+            ] {
+                let key = static_cf_string(label);
+                if key.is_null() {
+                    error!("Problem creating {}", label);
+                }
+
+                let preference = CFPreferencesCopyAppValue(key, bundle_id_key);
+                let preference_str = cf_string_to_string(preference);
+
+                preferences.insert(label, preference_str);
+
+                CFRelease(key.cast())
             }
-
-            let s3_access_key_key = static_cf_string(S3_ACCESS_PROFILE_KEY);
-            if s3_access_key_key.is_null() {
-                println!("Problem creating s3_access_key_key");
-            }
-
-            let s3_secret_key_key = static_cf_string(S3_SECRET_PROFILE_KEY);
-            if s3_secret_key_key.is_null() {
-                println!("Problem creating s3_secret_key_key");
-            }
-
-            let s3_endpoint = CFPreferencesCopyAppValue(s3_endpoint_key, bundle_id_key);
-            let s3_endpoint_str = cf_string_to_string(s3_endpoint);
-
-            let s3_access_key = CFPreferencesCopyAppValue(s3_access_key_key, bundle_id_key);
-            let s3_access_key_str = cf_string_to_string(s3_access_key);
-
-            let s3_secret_key = CFPreferencesCopyAppValue(s3_secret_key_key, bundle_id_key);
-            let s3_secret_key_str = cf_string_to_string(s3_secret_key);
 
             let profile_config = Configuration {
                 s3: S3 {
-                    endpoint: s3_endpoint_str.unwrap_or_default(),
-                    access_key: s3_access_key_str.unwrap_or_default(),
-                    secret_key: s3_secret_key_str.unwrap_or_default(),
+                    endpoint: preferences[S3_ENDPOINT_PROFILE_KEY]
+                        .to_owned()
+                        .unwrap_or_default(),
+                    access_key: preferences[S3_ACCESS_PROFILE_KEY]
+                        .to_owned()
+                        .unwrap_or_default(),
+                    secret_key: preferences[S3_SECRET_PROFILE_KEY]
+                        .to_owned()
+                        .unwrap_or_default(),
                 },
             };
-
-            CFRelease(s3_endpoint_key.cast());
-            CFRelease(s3_access_key_key.cast());
-            CFRelease(s3_secret_key_key.cast());
-            CFRelease(bundle_id_key.cast());
 
             Some(profile_config)
         }
