@@ -6,9 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aws-config = "1.1.9"
+aws-sdk-s3 = "1.21.0"
+clap = { version = "4.5.4", features = ["derive"] }
+clap_derive = { version = "4.0.0-rc.1" }
 core-foundation-sys = "0.8.6"
 env_logger = "0.11.3"
 log = "0.4.21"
-notify = "6.1.1"
+notify = { version = "6.1.1", default-features = false, features = ["macos_kqueue"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_yaml = "0.9.33"
+tokio = { version = "1.36.0", features = ["full"] }
