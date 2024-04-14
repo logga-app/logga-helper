@@ -24,17 +24,29 @@ use crate::flags::Flags;
 enum LabelKey {
     S3Bucket,
     S3Endpoint,
+    S3Region,
     S3KeychainAuthentication,
+}
+
+impl From<&LabelKey> for &str {
+    fn from(key: &LabelKey) -> Self {
+        match *key {
+            LabelKey::S3Bucket => "S3Bucket",
+            LabelKey::S3Endpoint => "S3Endpoint",
+            LabelKey::S3Region => "S3Region",
+            LabelKey::S3KeychainAuthentication => "S3KeychainAuthentication",
+        }
+    }
+}
+
+impl fmt::Display for LabelKey {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 trait PreferenceTrait<T> {
     fn get_preference_val(&self, bundle_id_key: *const __CFString) -> Result<Option<T>, String>;
-}
-
-impl fmt::Display for LabelKey {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
 }
 
 #[derive(Deserialize, Default)]
@@ -48,6 +60,7 @@ pub struct Configuration {
 pub struct S3 {
     pub bucket: String,
     pub endpoint: String,
+    pub region: String,
     pub keychain_authentication: bool,
 }
 
@@ -59,6 +72,10 @@ impl S3 {
         }
         if self.endpoint.is_empty() {
             warn!("endpoint length was empty");
+            return false;
+        }
+        if self.region.is_empty() {
+            warn!("region length was empty");
             return false;
         }
         return true;
@@ -106,7 +123,7 @@ impl Configuration {
                 return None;
             }
 
-            for label in vec![LabelKey::S3Bucket, LabelKey::S3Endpoint] {
+            for label in vec![LabelKey::S3Region, LabelKey::S3Bucket, LabelKey::S3Endpoint] {
                 let preference_str = match label.get_preference_val(bundle_id_key) {
                     Ok(value) => value,
                     Err(err) => {
@@ -134,15 +151,15 @@ impl Configuration {
                 endpoint: preferences[&LabelKey::S3Endpoint]
                     .to_owned()
                     .unwrap_or_default(),
+                region: preferences[&LabelKey::S3Region]
+                    .to_owned()
+                    .unwrap_or_else(|| String::from("us-east-1")),
                 keychain_authentication: keychain_auth_bool.to_owned().unwrap_or_default(),
             };
 
-            match s3.validate() {
-                true => (),
-                false => {
-                    warn!("profile validation failed, falling back to yaml config.");
-                    return None;
-                }
+            if !s3.validate() {
+                warn!("profile validation failed, falling back to yaml config.");
+                return None;
             }
 
             Some(Configuration { s3: s3 })
@@ -155,10 +172,9 @@ impl LabelKey {
         &self,
         bundle_id_key: *const __CFString,
     ) -> Result<CFPropertyListRef, String> {
-        let label = self.to_owned().to_string();
-        let key = static_cf_string(&label);
+        let key = static_cf_string(self.into());
         if key.is_null() {
-            return Err(format!("Problem creating {:?}", &self.to_string()));
+            return Err(format!("Problem creating {:?}", self.to_string()));
         }
         unsafe {
             let preference = CFPreferencesCopyAppValue(key, bundle_id_key);

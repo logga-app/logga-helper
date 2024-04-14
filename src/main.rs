@@ -1,4 +1,4 @@
-use log::error;
+use log::{error, warn};
 use logga_helper::configuration::Configuration;
 use logga_helper::flags::Flags;
 use logga_helper::s3_client;
@@ -12,10 +12,19 @@ async fn main() {
     let flags = Flags::build();
     let config = Configuration::build(&flags);
 
+    println!(
+        "{} {} {} {}",
+        &config.s3.bucket,
+        &config.s3.endpoint,
+        &config.s3.keychain_authentication,
+        &config.s3.region
+    );
+
     let client = match s3_client::create_s3_client(&config).await {
         Ok(client) => client,
         Err(err) => {
-            error!("Couldn't create AWS client: {:?}", err);
+            warn!("Couldn't create AWS client: {}", err);
+
             process::exit(1);
         }
     };
