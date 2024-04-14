@@ -12,13 +12,7 @@ async fn main() {
     let flags = Flags::build();
     let config = Configuration::build(&flags);
 
-    println!(
-        "{} {} {} {}",
-        &config.s3.bucket,
-        &config.s3.endpoint,
-        &config.s3.keychain_authentication,
-        &config.s3.region
-    );
+    // TODO: if S3KeychainAuthentication set, read AWS credentials from keychain
 
     let client = match s3_client::create_s3_client(&config).await {
         Ok(client) => client,

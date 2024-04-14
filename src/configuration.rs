@@ -46,7 +46,28 @@ impl fmt::Display for LabelKey {
 }
 
 trait PreferenceTrait<T> {
-    fn get_preference_val(&self, bundle_id_key: *const __CFString) -> Result<Option<T>, String>;
+    fn get_preference_val(
+        &self,
+        bundle_id_key: *const __CFString,
+    ) -> Result<Option<T>, ProfileError>;
+}
+
+pub enum ProfileError<'a> {
+    CreateKey(&'a str),
+    ValidateEmpty(&'a str),
+}
+
+impl fmt::Display for ProfileError<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ProfileError::CreateKey(key) => {
+                write!(f, "failed to construct key: {}", key)
+            }
+            Self::ValidateEmpty(key) => {
+                write!(f, "{} was empty", key)
+            }
+        }
+    }
 }
 
 #[derive(Deserialize, Default)]
@@ -65,20 +86,17 @@ pub struct S3 {
 }
 
 impl S3 {
-    fn validate(&self) -> bool {
+    fn validate(&self) -> Result<(), ProfileError> {
         if self.bucket.is_empty() {
-            warn!("bucket length was empty");
-            return false;
+            return Err(ProfileError::ValidateEmpty("bucket"));
         }
         if self.endpoint.is_empty() {
-            warn!("endpoint length was empty");
-            return false;
+            return Err(ProfileError::ValidateEmpty("bucket"));
         }
         if self.region.is_empty() {
-            warn!("region length was empty");
-            return false;
+            return Err(ProfileError::ValidateEmpty("bucket"));
         }
-        return true;
+        Ok(())
     }
 }
 
@@ -157,9 +175,12 @@ impl Configuration {
                 keychain_authentication: keychain_auth_bool.to_owned().unwrap_or_default(),
             };
 
-            if !s3.validate() {
-                warn!("profile validation failed, falling back to yaml config.");
-                return None;
+            match s3.validate() {
+                Ok(_) => (),
+                Err(err) => {
+                    warn!("Profile validation failed: {}", err);
+                    return None;
+                }
             }
 
             Some(Configuration { s3: s3 })
@@ -171,10 +192,10 @@ impl LabelKey {
     fn read_preference(
         &self,
         bundle_id_key: *const __CFString,
-    ) -> Result<CFPropertyListRef, String> {
-        let key = static_cf_string(self.into());
+    ) -> Result<CFPropertyListRef, ProfileError> {
+        let key = static_cf_string("self.into()");
         if key.is_null() {
-            return Err(format!("Problem creating {:?}", self.to_string()));
+            return Err(ProfileError::CreateKey(self.into()));
         }
         unsafe {
             let preference = CFPreferencesCopyAppValue(key, bundle_id_key);
@@ -188,20 +209,17 @@ impl PreferenceTrait<String> for LabelKey {
     fn get_preference_val(
         &self,
         bundle_id_key: *const __CFString,
-    ) -> Result<Option<String>, String> {
-        match self.read_preference(bundle_id_key) {
-            Ok(pref) => Ok(cf_string_to_string(pref)),
-            Err(err) => Err(err),
-        }
+    ) -> Result<Option<String>, ProfileError> {
+        Ok(cf_string_to_string(self.read_preference(bundle_id_key)?))
     }
 }
 
 impl PreferenceTrait<bool> for LabelKey {
-    fn get_preference_val(&self, bundle_id_key: *const __CFString) -> Result<Option<bool>, String> {
-        match self.read_preference(bundle_id_key) {
-            Ok(pref) => Ok(cf_bool_to_bool(pref)),
-            Err(err) => Err(err),
-        }
+    fn get_preference_val(
+        &self,
+        bundle_id_key: *const __CFString,
+    ) -> Result<Option<bool>, ProfileError> {
+        Ok(cf_bool_to_bool(self.read_preference(bundle_id_key)?))
     }
 }
 
