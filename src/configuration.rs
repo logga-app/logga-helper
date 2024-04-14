@@ -91,10 +91,10 @@ impl S3 {
             return Err(ProfileError::ValidateEmpty("bucket"));
         }
         if self.endpoint.is_empty() {
-            return Err(ProfileError::ValidateEmpty("bucket"));
+            return Err(ProfileError::ValidateEmpty("endpoint"));
         }
         if self.region.is_empty() {
-            return Err(ProfileError::ValidateEmpty("bucket"));
+            return Err(ProfileError::ValidateEmpty("region"));
         }
         Ok(())
     }
