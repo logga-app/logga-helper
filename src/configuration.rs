@@ -136,6 +136,7 @@ impl Configuration {
 
         unsafe {
             let bundle_id_key = static_cf_string(&bundle_id);
+
             if bundle_id_key.is_null() {
                 warn!("Problem creating bundle_id_key");
                 return None;
@@ -193,7 +194,7 @@ impl LabelKey {
         &self,
         bundle_id_key: *const __CFString,
     ) -> Result<CFPropertyListRef, ProfileError> {
-        let key = static_cf_string("self.into()");
+        let key = static_cf_string(self.into());
         if key.is_null() {
             return Err(ProfileError::CreateKey(self.into()));
         }

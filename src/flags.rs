@@ -3,6 +3,7 @@ use clap::Parser;
 const DEFAULT_CONFIG_PATH: &str = "/Library/Application Support/Logga/config.yaml";
 const DEFAULT_PROFILE_PATH: &str = "/Library/Managed Preferences/com.logga.client.plist";
 const DEFAULT_BUNDLE_ID: &str = "com.logga.client";
+const DEFAULT_WATCH_DIR: &str = "/Library/Application Support/Logga";
 
 #[derive(Parser)]
 pub struct Flags {
@@ -14,6 +15,9 @@ pub struct Flags {
 
     #[arg(short, long, value_name = "bundle-id", default_value_t = DEFAULT_BUNDLE_ID.to_string())]
     pub bundle_id: String,
+
+    #[arg(short, long, value_name = "watch-dir", default_value_t = DEFAULT_WATCH_DIR.to_string())]
+    pub watch_dir: String,
 }
 
 impl Flags {
@@ -24,6 +28,7 @@ impl Flags {
             config_path: cli.config_path,
             profile_path: cli.profile_path,
             bundle_id: cli.bundle_id,
+            watch_dir: cli.watch_dir,
         }
     }
 }

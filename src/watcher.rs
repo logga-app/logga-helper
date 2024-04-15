@@ -29,7 +29,7 @@ pub async fn watch<P: AsRef<Path>>(
     for res in rx {
         match res {
             Ok(event) => handle(&event, &client, &bucket).await,
-            Err(error) => log::error!("Error: {error:?}"),
+            Err(error) => log::error!("Error watching files: {error:?}"),
         }
     }
 
