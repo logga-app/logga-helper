@@ -28,7 +28,7 @@ You are free to save this config as a separate file, just don't forget to point 
 [Read more](https://docs.getlogga.com/usage/configuration#configuration-with-custom-mdm-configuration-profile)
 
 You can use the following keys to configure the helper via Profiles:
-```plist
+```xml
 <key>S3Bucket</key>
 <string>testbucket</string>
 <key>S3Endpoint</key>
