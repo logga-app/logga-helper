@@ -64,6 +64,26 @@ com.logga.aws-access-key-id
 com.logga.aws-secret-access-key
 ```
 
-#### Example Invocation
+### Example Invocation
 
-`logga-helper --config-path config.yaml --profile-path /tmp --bundle-id com.test.service --watch-dir /Users`
+`sudo logga-helper --config-path config.yaml --profile-path /tmp --bundle-id com.test.service --watch-dir /Users`
+
+### Running as Daemon
+
+First, move the binary to `/usr/local/bin`
+
+Second, add your AWS credentials to the System Keychain:
+```bash
+sudo security add-generic-password -a root -s com.logga.aws-access-key-id -w $AWS_ACCESS_KEY_ID -T /usr/local/bin/logga-helper /Library/Keychains/System.keychain
+
+sudo security add-generic-password -a root -s com.logga.aws-secret-access-key -w $AWS_SECRET_ACCESS_KEY -T /usr/local/bin/logga-helper /Library/Keychains/System.keychain
+```
+
+Third, copy the `com.logga.helper.plist` to `/Library/LaunchDaemons`.
+
+Load the daemon:  
+`sudo launchctl load /Library/LaunchDaemons/com.logga.helper.plist`
+
+```
+Of course if you need want to use different flags (than default), modify the plist. 
+```

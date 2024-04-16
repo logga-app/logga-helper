@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!-- Name of launchd job. -->
+    <key>Label</key>
+    <string>com.logga.helper.daemon</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+           <key>RUST_LOG</key>
+           <string>info</string>
+    </dict>
+
+    <!-- Executable to run with arguments. -->
+    <key>ProgramArguments</key>
+    <array>
+      <string>/usr/local/bin/logga-helper</string>
+    </array>
+
+    <!-- Add Keychain access. -->
+    <key>SessionCreate</key>
+    <true/>
+
+    <!-- Always restart the process. -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Run at system load. -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Set log file. -->
+    <key>StandardOutPath</key>
+    <string>/Library/Application Support/Logga/helper.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Library/Application Support/Logga/helper.log</string>
+  </dict>
+</plist>
