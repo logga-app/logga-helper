@@ -20,7 +20,7 @@ s3:
   bucket: [string | bucket to upload zips to]
   endpoint: [string | s3 storage endpoint]
   region: [string | bucket region]
-  keychainAuthentication: [bool | read aws credentials from keychain]
+  keychainAuthentication: [bool | read S3 credentials from keychain]
 ```
 You are free to save this config as a separate file, just don't forget to point the helper to the correct config file location.
 
@@ -49,6 +49,11 @@ Configuration Profile take precedence over the `yaml` configuration. If (for som
 `watch-dir`: Points to the directory to watch for `zip` creation events. (*default*: /Library/Application Support/Logga)
 
 #### Env vars
+
+```
+Don't be afraid of the AWS wording, the binary will upload to any S3 compatible storage backends.
+```
+
 When `keychainAuthentication` is set to **false**, the binary will expect these good old AWS env vars to connect to the S3 storage:
 
 `AWS_ACCESS_KEY_ID`  
@@ -56,7 +61,7 @@ When `keychainAuthentication` is set to **false**, the binary will expect these 
 `AWS_DEFAULT_REGION`
 
 #### Keychain
-When `keychainAuthentication` is set to **true**, the binary will try to read AWS credentials from the Keychain.
+When `keychainAuthentication` is set to **true**, the binary will try to read S3 credentials from the Keychain.
 
 Prior using the binary, create two Keychain password entires for the current user (that runs the helper). The service names should be respectively:
 ```
@@ -72,7 +77,7 @@ com.logga.aws-secret-access-key
 
 First, move the binary to `/usr/local/bin`
 
-Second, add your AWS credentials to the System Keychain:
+Second, add your S3 credentials to the System Keychain:
 ```bash
 sudo security add-generic-password -a root -s com.logga.aws-access-key-id -w $AWS_ACCESS_KEY_ID -T /usr/local/bin/logga-helper /Library/Keychains/System.keychain
 
