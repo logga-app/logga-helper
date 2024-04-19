@@ -103,12 +103,12 @@ pub async fn create_s3_client(config: &Configuration) -> Result<Client, ClientEr
     Ok(Client::from_conf(shared_config_with_endpoint))
 }
 
-fn env_var(key: EnvVar) -> Result<String, ClientError<'static>> {
+fn env_var<'a>(key: EnvVar) -> Result<String, ClientError<'a>> {
     let key_str: &str = key.into();
     env::var(key_str).map_err(|e| ClientError::CredentialNotSet(key_str, e))
 }
 
-fn keychain_item(key: KeychainServices, user: &String) -> Result<String, ClientError<'static>> {
+fn keychain_item<'a>(key: KeychainServices, user: &String) -> Result<String, ClientError<'a>> {
     let password = get_generic_password(key.into(), &user)?;
     Ok(String::from_utf8(password)?)
 }
@@ -117,7 +117,7 @@ fn keychain_item(key: KeychainServices, user: &String) -> Result<String, ClientE
 
 struct CredentialsStore(String, String);
 
-fn get_aws_credentials(config: &Configuration) -> Result<CredentialsStore, ClientError<'static>> {
+fn get_aws_credentials<'a>(config: &Configuration) -> Result<CredentialsStore, ClientError<'a>> {
     if config.s3.keychain_authentication {
         debug!("Trying to read AWS credentials from Keychain.");
 
