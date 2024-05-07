@@ -184,7 +184,7 @@ impl Configuration {
                 }
             }
 
-            Some(Configuration { s3: s3 })
+            Some(Configuration { s3 })
         }
     }
 }
